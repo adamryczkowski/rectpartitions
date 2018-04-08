@@ -5,6 +5,7 @@ test_that("Simple edge cases", {
   ans<-maxHist(0, 1)
   testthat::expect_equal(ans, list(x0=1L, x1=1L, area=0))
   ans<-maxHist(c(0,0), c(1,1))
+
   testthat::expect_equal(ans$area, 0)
   ans<-maxHist(c(0,1), c(1,0))
   testthat::expect_equal(ans$area, 0)

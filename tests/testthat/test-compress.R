@@ -8,6 +8,13 @@ test_that("Edge cases", {
   ans<-uncompress(ans)
   testthat::expect_equal(ans, rect)
 
+  rect<-0L
+  dim(rect)<-c(1,1)
+  ans<-compress(rect)
+  testthat::expect_equal(as.integer(ans), as.integer(rect))
+  ans<-uncompress(ans)
+  testthat::expect_equal(ans, rect)
+
   rect<-c(1,1)
   dim(rect)<-c(2,1)
   ans<-compress(rect)
