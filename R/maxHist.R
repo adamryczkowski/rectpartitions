@@ -29,11 +29,12 @@ maxHist<-function(row, colweights) {
       } else {
         x0<-stack.top(result)+1
       }
-      area <- calc_area(colweights[seq(x0, i-1)], top_val)
+      area <- top_val * (i - x0)
 
 #      area <- res$area
       if(area>max_area) {
-        best_result<-list(x0=x0, x1=i-1, area=area)
+        warea <- calc_area(colweights[seq(x0, i-1)], top_val)
+        best_result<-list(x0=x0, x1=i-1, area=warea)
         max_area <- area
       }
     }
@@ -50,9 +51,10 @@ maxHist<-function(row, colweights) {
     } else {
       x0<-stack.top(result)+1
     }
-    area <- calc_area(colweights[seq(x0, x1)], top_val)
+    area <- top_val * (length(row) - x0 + 1)
     if(area > max_area) {
-      best_result<-list(x0=x0, x1=x1, area=area)
+      warea <- calc_area(colweights[seq(x0, length(row))], top_val)
+      best_result<-list(x0=x0, x1=length(row), area=warea)
       max_area<-area
     }
   }

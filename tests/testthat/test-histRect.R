@@ -11,7 +11,10 @@ test_that("Simple edge cases", {
   ans<-maxHist(c(1,0), c(0,1))
   testthat::expect_equal(ans$area, 0)
   ans<-maxHist(c(1,1), c(1,2))
-  testthat::expect_equal(ans$area, list(x0=1L, x1=2L, area=2))
+  testthat::expect_equal(ans$area, 2)
+  debugonce(maxHist)
+  ans<-maxHist(c(1,1), c(1,3))
+  testthat::expect_equal(ans, list(x0=1L, x1=2L, area=4))
 })
 
 test_that("Test from https://www.geeksforgeeks.org/largest-rectangle-under-histogram", {
