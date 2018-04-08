@@ -9,6 +9,10 @@ maxRectangle<-function(rect, colweights, rowweights) {
   best_result <- maxHist(wrect[1,], colweights)
   best_result <- c(best_result, list(y0=1, y1=1))
 
+  if(nrow(rect)==1) {
+    return(best_result)
+  }
+
   # iterate over row to find maximum rectangular area considering each row as histogram
   for(y in seq(2, nrow(rect))) {
     wrect[y,]<-(wrect[y,]+wrect[y-1,])*sign(rect[y,])
