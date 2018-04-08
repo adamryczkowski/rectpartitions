@@ -60,7 +60,7 @@ test_that("Example from https://www.geeksforgeeks.org/maximum-size-rectangle-bin
   dim(rect)<-c(4,4)
   ans<-maxRectangle(rect, colweights = rep(1,4), rowweights = rep(1,4))
   testthat::expect_equal(ans, list(x0=2L, x1=3L, area=8, y0=1L, y1=4L))
-}
+})
 
 test_that("Bigger test", {
 

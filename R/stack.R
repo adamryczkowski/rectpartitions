@@ -38,7 +38,19 @@ stack.length<-function(stack) {
   if(stack.is_empty(stack)) {
     return(0)
   } else {
-    return(1+stack.length(stack$next.element))
+    return(stack.length_recursive(stack$top.element))
+  }
+}
+
+stack.length_recursive<-function(stack) {
+  if('next.element' %in% names(stack)) {
+    return(1+stack.length_recursive(stack$next.element))
+  } else {
+    if('value' %in% names(stack)) {
+      return(1)
+    } else {
+      return(0)
+    }
   }
 }
 
@@ -53,6 +65,7 @@ stack.to_list<-function(stack) {
   while(!is.null(item)) {
     ans[[i]]<-item$value
     item<-item$next.element
+    i<-i+1
   }
   return(ans)
 }
