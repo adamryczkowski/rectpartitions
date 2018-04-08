@@ -27,7 +27,7 @@ Input: binary matrix, where rows are objects and columns are features and ones i
 
 The algorithm will take several steps. 
 
-1. Decompose the matrix into sets of continuous islands of ones. Form a list of the islands and then work with each island separately. (It is at most O(n^2) problem, n = total size of the matrix, but I believe it can be optimized further). 
+1. Decompose the matrix into sets of contiguous islands of ones. Form a list of the islands and then work with each island separately. (It is at most O(n^2) problem, n = total size of the matrix, but I believe it can be optimized further). 
 2. Compress each island by eliminating duplicated rows and columns, and store this information with the matrix, so I will be able to revert this process. This step is optional, but it should speed up the rest significantly, as it will also take care of rows and columns filled with zeroes, reducing sizes of the matrices considerably, especially if there are more zeroes then ones in the matrix.
 3. Find the biggest rectangle in the island using a modified version of any of the solutions to the *maximal rectangle problem*, which are also O(n). The modification will account for the weights of the rows and columns introduced by compression step. Remember the solution, and cover it with zeroes in the matrix. (O(n)). 
 4. Decompose the matrix into the contiguous islands of 1 (like in step 1) and add them to a list of islands and jump to the step 2.

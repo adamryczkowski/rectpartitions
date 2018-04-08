@@ -1,0 +1,15 @@
+Package: maxrectprob
+Type: Package
+Title: Algorithm that Finds Permutation of Rows and Colums that Decomposises a Binary Matrix into a Minimal and Exclusive Set of Covering Rectangles 
+Version: 0.1.0
+Author: Adam Ryczkowski partially using materials from geeksforgeeks.org/maximum-size-rectangle-binary-sub-matrix-1s
+Maintainer: Adam Ryczkowski <adam@statystyka.net>
+Description: The task is to find a permutation of rows and columns of the matrix, such that a matrix built by shuffling the columns and rows according to the permutations can be partitioned into a minimal set of rectangles. Find all the rectangles as well.
+    For illustration, one can think about the problem this way:
+    Suppose I have a set of objects and a set of properties. Each object can have any number of (distinct) properties. The task is to summarize (report) this mapping using the least amount of sentences. Each sentence has a form "<list of objects> have properties <list of properties>".
+License: GPL 3.0
+Encoding: UTF-8
+Imports:
+	testthat,
+	purrr
+LazyData: true
