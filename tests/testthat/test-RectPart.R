@@ -52,7 +52,7 @@ test_that("Simple edge cases", {
   testthat::expect_equal(ans$area, 12)
 })
 
-test_that("Example from ", {
+test_that("Example from https://www.geeksforgeeks.org/maximum-size-rectangle-binary-sub-matrix-1s/", {
   rect<-as.integer(c(0, 1, 1, 0,
                      1, 1, 1, 1,
                      1, 1, 1, 1,
