@@ -8,6 +8,7 @@ partition_rect<-function(rect, flag_ordered = TRUE) {
     rect<-obj$rect
     attributes(obj$target_rect)<-atrs
 #    browser()
+#    debugonce(compress)
     obj$target_rect<-compress(rect = obj$target_rect, flag_ordered = flag_ordered)
 
     ans<-c(ans, list(obj$target_rect))

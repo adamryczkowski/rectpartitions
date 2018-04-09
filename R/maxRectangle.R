@@ -39,3 +39,12 @@ zero_rect<-function(part, ans) {
   part[which_y,which_x]<-0
   return(part)
 }
+
+#
+zero_rect2<-function(full_rect, ans) {
+  full_rect[ans$rows, ans$cols]<-0
+  #  browser()
+  #  which_x<-which(attr(part, 'colmap') %in% seq(ans$x0, ans$x1))
+  #  which_y<-which(colmap<-attr(part, 'rowmap') %in% seq(ans$y0, ans$y1))
+  return(full_rect)
+}

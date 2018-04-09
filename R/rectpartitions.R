@@ -50,3 +50,74 @@ get_rectangles_shuffle<-function(m, target_value=1, method='single') {
   ans<-get_rectangles(rect_xy)
   ans
 }
+
+#' Another function that re-shuffles columns and rows of the integer matrix to find the best partitionioning into a minimal set of rectangles.
+#'
+#' It keeps re-shuffling each time a rectangle was found to minimize. It takes a little longer, but possibly finds smaller number of partitions
+#'
+#' @param m Matrix of integer to partition.
+#' @param target_value Value to use as a marker. Defaults to "1". Any other value than that will be treated as the absense of marker.
+#' @param method Shuffling is done by means of hierarchical clustering. This parameter denotes the clustering algorithm to use. Defaults to \code{'single'}.
+#' @return Returns list of rectangles. Each rectangle is a list defined by \code{x0}, \code{x1}, \code{y0} and \code{y1}.
+#' @export
+get_rectangles_multishuffle<-function(m, target_value=1, method='single') {
+  ans_list<-list() #List with all the found rectangles
+  rect<-matrix(as.integer(m==target_value), nrow = nrow(m), ncol=ncol(m))
+
+  while(TRUE) {
+    #Algorithm (in a loop)
+    #1. Shuffle rows and columns with the help of the hierarchical clustering
+    dists<-dist(rect, method='manhattan')
+    shuf_y<-hclust(dists, method=method)$order
+    rect_y<-rect[shuf_y,]
+
+    dists<-dist(t(rect), method='manhattan')
+    shuf_x<-hclust(dists, method=method)$order
+    rect_xy<-rect_y[,shuf_x]
+    attr(rect_xy, 'rowmap')<-Matrix::invPerm(shuf_y)
+    attr(rect_xy, 'rowweights')<-rep(1, nrow(rect))
+    attr(rect_xy, 'colmap')<-Matrix::invPerm(shuf_x)
+    attr(rect_xy, 'colweights')<-rep(1, ncol(rect))
+
+
+    #2. Compress matrix to eliminate duplicate rows & cols
+    #debugonce(rectpartitions:::compress)
+    wrect<-rectpartitions:::compress(rect = rect_xy, flag_ordered = FALSE)
+    #3. Find all continuous subsets
+    #debugonce(rectpartitions:::partition_rect)
+    all_parts<-rectpartitions:::partition_rect(rect = wrect, flag_ordered = FALSE)
+    #4. Perform analysis on the shuffled matrix
+
+    results<-purrr::map(all_parts, ~rectpartitions:::maxRectangle(rect = ., colweights = attr(., 'colweights'),
+                                                        rowweights = attr(., 'rowweights')))
+
+    #5. Get the biggest one
+    counts<-purrr::map_dbl(results, 'area')
+    biggest_part_no<-which.max(counts)
+    biggest_part<-all_parts[[biggest_part_no]]
+    ans<-results[[biggest_part_no]]
+    #6. Store the result in an uncompressed way
+    ans<-rectpartitions:::gen_ans(ans=ans, rect=biggest_part)
+    ans_list<-c(ans_list, list(ans))
+    #7. Substract the removed pieces
+
+    rect<-rectpartitions:::zero_rect2(rect, ans)
+    if(sum(rect)==0) {
+      return(ans_list)
+    } else {
+      cat(paste0(sum(rect), " pieces left.\n"))
+    }
+    #8. Uncompress & un-shuffle
+    #9. Un-shuffle it
+#    rect<-rect_xy[Matrix::invPerm(shuf_y),Matrix::invPerm(shuf_x)]
+  }
+  return(ans_list)
+}
+
+gen_ans<-function(ans, rect) {
+  rows<-seq(ans$y0, ans$y1)
+  cols<-seq(ans$x0, ans$x1)
+  rows<-unlist(purrr::map(rows, ~which(attr(rect,"rowmap")==.)))
+  cols<-unlist(purrr::map(cols, ~which(attr(rect,"colmap")==.)))
+  return(list(rows=rows, cols=cols))
+}

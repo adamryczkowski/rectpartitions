@@ -3,7 +3,7 @@
 compress<-function(rect, flag_ordered=TRUE) {
   if(!'integer' %in% class(rect)) {
     a<-as.integer(rect)
-    dim(a)<-dim(rect)
+    attributes(a)<-attributes(rect)
     rect<-a
   }
   checkmate::assertArray(rect, mode='integer', any.missing = FALSE, d=2, null.ok=FALSE)
@@ -15,21 +15,6 @@ compress<-function(rect, flag_ordered=TRUE) {
   rect<-compress_1(rect, flag_ordered, flag_col=TRUE)
   rect<-compress_1(rect, flag_ordered, flag_col=FALSE)
   return(rect)
-}
-
-#Function recreates compressed matrix
-uncompress<-function(rect) {
-  colmap<-attr(rect, 'colmap')
-  rect1<-uncompress_1(rect, colmap)
-  rowmap<-attr(rect, 'rowmap')
-  rect2<-t(uncompress_1(t(rect1), rowmap))
-  return(rect2)
-}
-
-uncompress_1<-function(rect, colmap) {
-#  l<-length(colmap)
-  ans<-rect[,colmap,drop=FALSE]
-  return(ans)
 }
 
 #Finds duplicates of either colums or rows.
@@ -98,13 +83,13 @@ compress_1<-function(rect, flag_ordered, flag_col) {
     }
   }
   weights<-purrr::map_dbl(seq_along(weights), ~sum(input_weights[dup_cols==.]))
-  dup_cols<-dup_cols[input_map]
+  dup_cols<-as.integer(as.factor(dup_cols[input_map]))
 
   if(flag_col) {
     ans<-rect[,weights>0, drop=FALSE]
 
     attr(ans, 'colweights')<-weights[weights>0,drop=FALSE]
-    attr(ans, 'colmap')<-as.integer(as.factor(dup_cols))
+    attr(ans, 'colmap')<-dup_cols
     attr(ans, 'rowweights')<-attr(rect, 'rowweights')
     attr(ans, 'rowmap')<-attr(rect, 'rowmap')
 
@@ -113,9 +98,25 @@ compress_1<-function(rect, flag_ordered, flag_col) {
     ans<-rect[weights>0,,drop=FALSE]
 
     attr(ans, 'rowweights')<-weights[weights>0,drop=FALSE]
-    attr(ans, 'rowmap')<-as.integer(as.factor(dup_cols))
+    attr(ans, 'rowmap')<-dup_cols
     attr(ans, 'colweights')<-attr(rect, 'colweights')
     attr(ans, 'colmap')<-attr(rect, 'colmap')
   }
   return(ans)
 }
+
+#Function recreates compressed matrix
+uncompress<-function(rect) {
+  colmap<-attr(rect, 'colmap')
+  rect1<-uncompress_1(rect, colmap)
+  rowmap<-attr(rect, 'rowmap')
+  rect2<-t(uncompress_1(t(rect1), rowmap))
+  return(rect2)
+}
+
+uncompress_1<-function(rect, colmap) {
+  #  l<-length(colmap)
+  ans<-rect[,colmap,drop=FALSE]
+  return(ans)
+}
+
