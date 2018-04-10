@@ -35,36 +35,19 @@ get_rectangles<-function(m, target_value=1) {
 #' @param method Shuffling is done by means of hierarchical clustering. This parameter denotes the clustering algorithm to use. Defaults to \code{'single'}.
 #' @return Returns list of rectangles. Each rectangle is a list defined by \code{x0}, \code{x1}, \code{y0} and \code{y1}.
 #' @export
-get_rectangles_shuffle<-function(m, target_value=1, method='single') {
-  #Algorithm
-  #1. Shuffle rows and columns with the help of the hierarchical clustering
-  #2. Perform analysis on the shuffled matrix
-  #3. Un-shuffle it
-  dists<-dist(m, method='manhattan')
-  shuf_y<-hclust(dists, method=method)$order
-  rect_y<-m[shuf_y,]
-
-  dists<-dist(t(m), method='manhattan')
-  shuf_x<-hclust(dists, method=method)$order
-  rect_xy<-rect_y[,shuf_x]
-  ans<-get_rectangles(rect_xy)
-  ans
-}
-
-#' Another function that re-shuffles columns and rows of the integer matrix to find the best partitionioning into a minimal set of rectangles.
-#'
-#' It keeps re-shuffling each time a rectangle was found to minimize. It takes a little longer, but possibly finds smaller number of partitions
-#'
-#' @param m Matrix of integer to partition.
-#' @param target_value Value to use as a marker. Defaults to "1". Any other value than that will be treated as the absense of marker.
-#' @param method Shuffling is done by means of hierarchical clustering. This parameter denotes the clustering algorithm to use. Defaults to \code{'single'}.
-#' @return Returns list of rectangles. Each rectangle is a list defined by \code{x0}, \code{x1}, \code{y0} and \code{y1}.
-#' @export
-get_rectangles_multishuffle<-function(m, target_value=1, method='single') {
+get_rectangles_shuffle<-function(m, target_value=1, method='single', flag_allow_stripes=FALSE) {
   ans_list<-list() #List with all the found rectangles
   rect<-matrix(as.integer(m==target_value), nrow = nrow(m), ncol=ncol(m))
 
   while(TRUE) {
+    if(flag_allow_stripes) {
+      sum_horiz<-plyr::aaply(rect, 1, sum)
+      sum_vert<-plyr::aaply(rect, 2, sum)
+      best_stripe_size<-max(c(sum_horiz, sum_vert))
+    } else {
+      best_stripe_size<-0
+    }
+
     #Algorithm (in a loop)
     #1. Shuffle rows and columns with the help of the hierarchical clustering
     dists<-dist(rect, method='manhattan')
@@ -89,19 +72,32 @@ get_rectangles_multishuffle<-function(m, target_value=1, method='single') {
     #4. Perform analysis on the shuffled matrix
 
     results<-purrr::map(all_parts, ~rectpartitions:::maxRectangle(rect = ., colweights = attr(., 'colweights'),
-                                                        rowweights = attr(., 'rowweights')))
+                                                                  rowweights = attr(., 'rowweights')))
 
     #5. Get the biggest one
     counts<-purrr::map_dbl(results, 'area')
-    biggest_part_no<-which.max(counts)
-    biggest_part<-all_parts[[biggest_part_no]]
-    ans<-results[[biggest_part_no]]
-    #6. Store the result in an uncompressed way
-    ans<-rectpartitions:::gen_ans(ans=ans, rect=biggest_part)
-    ans_list<-c(ans_list, list(ans))
-    #7. Substract the removed pieces
+    if(max(counts)<best_stripe_size) {
+      if(max(sum_vert) > max(sum_horiz)) {
+        which_n<-which.max(sum_vert)
+        ans<-list(cols=which_n, rows=which(rect[,which_n]==1))
+        rect[,which_n]<-0
+      } else {
+        which_n<-which.max(sum_horiz)
+        ans<-list(rows=which_n, cols=which(rect[which_n,]==1))
+        rect[which_n,]<-0
+      }
+      ans_list<-c(ans_list,list(ans))
+    } else {
+      biggest_part_no<-which.max(counts)
+      biggest_part<-all_parts[[biggest_part_no]]
+      ans<-results[[biggest_part_no]]
+      #6. Store the result in an uncompressed way
+      ans<-rectpartitions:::gen_ans(ans=ans, rect=biggest_part)
+      ans_list<-c(ans_list, list(ans))
+      #7. Substract the removed pieces
 
-    rect<-rectpartitions:::zero_rect2(rect, ans)
+      rect<-rectpartitions:::zero_rect2(rect, ans)
+    }
     if(sum(rect)==0) {
       return(ans_list)
     } else {
@@ -109,7 +105,38 @@ get_rectangles_multishuffle<-function(m, target_value=1, method='single') {
     }
     #8. Uncompress & un-shuffle
     #9. Un-shuffle it
-#    rect<-rect_xy[Matrix::invPerm(shuf_y),Matrix::invPerm(shuf_x)]
+    #    rect<-rect_xy[Matrix::invPerm(shuf_y),Matrix::invPerm(shuf_x)]
+  }
+  return(ans_list)
+}
+
+get_stripes_shuffle<-function(m, target_value=1, flag_horiz=TRUE, flag_vert=TRUE) {
+  rect<-matrix(as.integer(m==target_value), nrow = nrow(m), ncol=ncol(m))
+  ans_list<-list()
+  while(sum(rect)>0) {
+    if(flag_horiz) {
+      sum_horiz<-plyr::aaply(rect, 1, sum)
+    } else {
+      sum_horiz<-0
+    }
+    if(flag_vert) {
+      sum_vert<-plyr::aaply(rect, 2, sum)
+    } else {
+      sum_vert<-0
+    }
+    if(sum(sum_vert) + sum(sum_horiz)==0) {
+      break
+    }
+    if(max(sum_vert) > max(sum_horiz)) {
+      which_n<-which.max(sum_vert)
+      ans<-list(cols=which_n, rows=which(rect[,which_n]==1))
+      rect[,which_n]<-0
+    } else {
+      which_n<-which.max(sum_horiz)
+      ans<-list(rows=which_n, cols=which(rect[which_n,]==1))
+      rect[which_n,]<-0
+    }
+    ans_list<-c(ans_list,list(ans))
   }
   return(ans_list)
 }
