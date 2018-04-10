@@ -53,3 +53,21 @@ partition_rect_1<-function(rect, x, y) {
   }
   return(list(rect=rect, target_rect=target_rect))
 }
+
+remove_zeroes<-function(rect) {
+  zero_cols<-purrr::map_lgl(seq_len(ncol(rect)), ~sum(rect[,.])==0)
+  zero_rows<-purrr::map_lgl(seq_len(nrow(rect)), ~sum(rect[.,])==0)
+  ans<-rect[!zero_rows, !zero_cols]
+  ans
+}
+
+
+find_first_non_zero<-function(rect) {
+  ans<-tryCatch(
+    which(rect!=0, arr.ind = TRUE)[1,],
+    error=function(e) list()
+  )
+  return(as.list(ans))
+}
+
+
