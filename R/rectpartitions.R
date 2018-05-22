@@ -25,6 +25,7 @@ get_rectangles<-function(m, target_value=1) {
     }
     all_parts<-new_parts
   }
+  ans_list<-decorate_ans(ans_list, m)
   return(ans_list)
 }
 
@@ -99,6 +100,7 @@ get_rectangles_shuffle<-function(m, target_value=1, method='single', flag_allow_
       rect<-rectpartitions:::zero_rect2(rect, ans)
     }
     if(sum(rect)==0) {
+      ans_list<-decorate_ans(ans_list, m)
       return(ans_list)
     } else {
       cat(paste0(sum(rect), " pieces left.\n"))
@@ -107,6 +109,7 @@ get_rectangles_shuffle<-function(m, target_value=1, method='single', flag_allow_
     #9. Un-shuffle it
     #    rect<-rect_xy[Matrix::invPerm(shuf_y),Matrix::invPerm(shuf_x)]
   }
+  ans_list<-decorate_ans(ans_list, m)
   return(ans_list)
 }
 
@@ -138,6 +141,7 @@ get_stripes_shuffle<-function(m, target_value=1, flag_horiz=TRUE, flag_vert=TRUE
     }
     ans_list<-c(ans_list,list(ans))
   }
+  ans_list<-decorate_ans(ans_list, m)
   return(ans_list)
 }
 
