@@ -23,10 +23,12 @@ compress_1<-function(rect, flag_ordered, flag_col) {
   if(flag_col) {
     if(ncol(rect)<2) {
       ans<-rect
-      attr(ans, 'colweights')<-1L
-      attr(ans, 'colmap')<-1L
-      attr(ans, 'rowweights')<-attr(rect, 'rowweights')
-      attr(ans, 'rowmap')<-attr(rect, 'rowmap')
+      if(is.null(attr(ans, 'colweights'))) {
+        attr(ans, 'colweights')<-1L
+      }
+      if(is.null(attr(ans, 'colmap'))) {
+        attr(ans, 'colmap')<-1L
+      }
       return(ans)
     }
     items<-purrr::map_chr(seq_len(ncol(rect)), ~paste0(rect[,.], collapse=''))
@@ -42,11 +44,12 @@ compress_1<-function(rect, flag_ordered, flag_col) {
   } else {
     if(nrow(rect)<2) {
       ans<-rect
-
-      attr(ans, 'rowweights')<-1L
-      attr(ans, 'rowmap')<-1L
-      attr(ans, 'colweights')<-attr(rect, 'colweights')
-      attr(ans, 'colmap')<-attr(rect, 'colmap')
+      if(is.null(attr(ans, 'rowweights'))) {
+        attr(ans, 'rowweights')<-1L
+      }
+      if(is.null(attr(ans, 'rowmap'))) {
+        attr(ans, 'rowmap')<-1L
+      }
       return(ans)
     }
     input_weights<-attr(rect, 'rowweights')
@@ -108,8 +111,10 @@ compress_1<-function(rect, flag_ordered, flag_col) {
 #Function recreates compressed matrix
 uncompress<-function(rect) {
   colmap<-attr(rect, 'colmap')
+  checkmate::assert_integer(colmap)
   rect1<-uncompress_1(rect, colmap)
   rowmap<-attr(rect, 'rowmap')
+  checkmate::assert_integer(rowmap)
   rect2<-t(uncompress_1(t(rect1), rowmap))
   return(rect2)
 }

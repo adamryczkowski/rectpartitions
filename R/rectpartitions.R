@@ -52,12 +52,20 @@ get_rectangles_shuffle<-function(m, target_value=1, method='single', flag_allow_
     #Algorithm (in a loop)
     #1. Shuffle rows and columns with the help of the hierarchical clustering
     dists<-dist(rect, method='manhattan')
-    shuf_y<-hclust(dists, method=method)$order
-    rect_y<-rect[shuf_y,]
+    if(length(dists)>0) {
+      shuf_y<-hclust(dists, method=method)$order
+    } else {
+      shuf_y<-seq_len(nrow(rect))
+    }
+    rect_y<-rect[shuf_y,,drop=FALSE]
 
     dists<-dist(t(rect), method='manhattan')
-    shuf_x<-hclust(dists, method=method)$order
-    rect_xy<-rect_y[,shuf_x]
+    if(length(dists)>0) {
+      shuf_x<-hclust(dists, method=method)$order
+    } else {
+      shuf_x<-seq_len(ncol(rect))
+    }
+    rect_xy<-rect_y[,shuf_x,drop=FALSE]
     attr(rect_xy, 'rowmap')<-Matrix::invPerm(shuf_y)
     attr(rect_xy, 'rowweights')<-rep(1, nrow(rect))
     attr(rect_xy, 'colmap')<-Matrix::invPerm(shuf_x)
